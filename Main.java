@@ -17,6 +17,7 @@ class TempFileBuffer {
 public class Main {
     private Charset charset = StandardCharsets.UTF_8;
     private boolean debug = false;
+    private List<File> tempFile;
     final private String  prefix = "batch_";
     private File sortBatch(List<String> batch) throws IOException{
         Collections.sort(batch);
@@ -38,8 +39,8 @@ public class Main {
 
     }
 
-    private List<File> splitAndSortFile(File input,long threshold) throws IOException {
-        List<File> tempFile = new ArrayList<>();
+    private void splitAndSortFile(File input,long threshold) throws IOException {
+        tempFile = new ArrayList<>();
         List<String> batchLine = new ArrayList<>();
         try (BufferedReader bufferIn = new BufferedReader(new FileReader(input,charset))) {
             String temp = bufferIn.readLine();
@@ -57,7 +58,6 @@ public class Main {
             if (debug) {
                 System.out.println("Finish splitting.");
             }
-            return tempFile;
         }
     }
 
@@ -82,19 +82,25 @@ public class Main {
             for(TempFileBuffer tempBuffer:potentialNextLine){
                 if(tempBuffer!=null&&tempBuffer.bf!=null) tempBuffer.bf.close();
             }
-            if(!debug){
-                for(File temp:tempFile) temp.delete();
+        }
+    }
+    void cleanUp(){
+        if(!debug){
+            for(File temp:tempFile){
+                if(temp!=null&&!temp.delete()){
+                    System.out.println("Cannot delete temporary file name: " + temp.getName());
+                }
             }
         }
     }
-
     public static void main(String[] args) throws IOException {
         File input = new File(args[0]);
         File output = new File(args[1]);
         long memoryLimit = Long.parseLong(args[2]);
         Main main = new Main();
         if(args.length>=4&&args[3].equals("-d")) main.debug=true;
-        List<File> tempFile = main.splitAndSortFile(input,(long)(memoryLimit/2*0.8));
-        main.merge(output,tempFile);
+        main.splitAndSortFile(input,(long)(memoryLimit/2*0.8));
+        main.merge(output,main.tempFile);
+        main.cleanUp();
     }
 }
