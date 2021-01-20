@@ -17,7 +17,7 @@ class TempFileBuffer {
 public class Main {
     private Charset charset = StandardCharsets.UTF_8;
     private boolean debug = false;
-    private List<File> tempFile;
+    private List<File> tempFile = new ArrayList<>();
     final private String  prefix = "batch_";
     private File sortBatch(List<String> batch) throws IOException{
         Collections.sort(batch);
