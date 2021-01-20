@@ -94,13 +94,17 @@ public class Main {
         }
     }
     public static void main(String[] args) throws IOException {
-        File input = new File(args[0]);
-        File output = new File(args[1]);
-        long memoryLimit = Long.parseLong(args[2]);
         Main main = new Main();
-        if(args.length>=4&&args[3].equals("-d")) main.debug=true;
-        main.splitAndSortFile(input,(long)(memoryLimit/2*0.8));
-        main.merge(output,main.tempFile);
-        main.cleanUp();
+        try{
+            File input = new File(args[0]);
+            File output = new File(args[1]);
+            long memoryLimit = Long.parseLong(args[2]);
+            if(args.length>=4&&args[3].equals("-d")) main.debug=true;
+            main.splitAndSortFile(input,(long)(memoryLimit/2*0.8));
+            main.merge(output,main.tempFile);
+        } finally {
+            main.cleanUp();
+        }
+
     }
 }
